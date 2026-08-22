@@ -1,0 +1,13 @@
+node_modules
+**/node_modules
+dist
+**/dist
+build
+**/build
+.astro
+**/.astro
+.nx
+**/*.tsbuildinfo
+.git
+*.log
+coverage

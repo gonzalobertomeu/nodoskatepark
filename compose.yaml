@@ -1,0 +1,4 @@
+include:
+  - compose.infra.yaml
+  - apps/backend/compose.yaml
+  - apps/frontend/compose.yaml
