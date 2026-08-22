@@ -1,0 +1,2 @@
+# Backend uses Bun's default test runner behavior (bun test apps/backend) — no DOM preload
+# needed since this is a server-side NestJS app.

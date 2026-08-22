@@ -1,0 +1,50 @@
+services:
+  backend:
+    build:
+      context: ../..
+      dockerfile: apps/backend/Dockerfile.dev
+    # apps/backend/.env (gitignored, see .env.example) is auto-loaded here for the ${VAR:-default}
+    # substitutions below — only needed to override Google OAuth/Resend; everything else already
+    # has a working dev default so `bun run up` boots without it.
+    environment:
+      DATABASE_URL: "postgresql://nodoskatepark:nodoskatepark@postgres:5432/nodoskatepark?schema=public"
+      PORT: "3000"
+      SESSION_COOKIE_NAME: "nsk_session"
+      SESSION_TTL_HOURS: "24"
+      GOOGLE_CLIENT_ID: "${GOOGLE_CLIENT_ID:-dev-placeholder-client-id}"
+      GOOGLE_CLIENT_SECRET: "${GOOGLE_CLIENT_SECRET:-dev-placeholder-client-secret}"
+      GOOGLE_CALLBACK_URL: "http://localhost:3000/auth/google/callback"
+      RESEND_API_KEY: "${RESEND_API_KEY:-}"
+      EMAIL_FROM: "${EMAIL_FROM:-NodoSkatepark <no-reply@nodoskatepark.com>}"
+      EMAIL_ADAPTER: "${EMAIL_ADAPTER:-dev}"
+      EMAIL_VERIFICATION_SECRET: "${EMAIL_VERIFICATION_SECRET:-dev-only-insecure-secret}"
+      FRONTEND_URL: "http://localhost:4321"
+      SKATER_PHOTO_STORAGE_DIR: "/data/skater-photos"
+    # Source is bind-mounted for live watch/reload; node_modules at every level is shadowed by a
+    # named volume instead, so the container's own (Linux, Bun-installed) dependency tree is
+    # never overwritten by whatever is or isn't in the host's node_modules, and vice versa.
+    # These volumes are NOT shared with the frontend service — each service's `bun install` only
+    # sees its own + contracts' package.json, so a shared root/contracts volume would end up
+    # populated from whichever image happened to initialize it first, silently missing the
+    # other service's dependencies.
+    volumes:
+      - ../..:/repo
+      - backend_node_modules_root:/repo/node_modules
+      - backend_node_modules:/repo/apps/backend/node_modules
+      - backend_contracts_node_modules:/repo/packages/contracts/node_modules
+      - skater_photos:/data/skater-photos
+    command: >
+      sh -c "apps/backend/node_modules/.bin/prisma generate --schema apps/backend/prisma/schema.prisma &&
+      apps/backend/node_modules/.bin/prisma migrate deploy --schema apps/backend/prisma/schema.prisma &&
+      cd apps/backend && bun run --watch src/main.ts"
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  backend_node_modules_root:
+  backend_node_modules:
+  backend_contracts_node_modules:
+  skater_photos:

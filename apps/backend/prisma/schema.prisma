@@ -1,0 +1,140 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum AccountRole {
+  skater
+  instructor
+  administrador
+}
+
+enum AccountStatus {
+  active
+  deactivated
+}
+
+model Account {
+  id                String        @id @default(uuid())
+  email             String        @unique
+  passwordHash      String?
+  googleId          String?       @unique
+  role              AccountRole   @default(skater)
+  status            AccountStatus @default(active)
+  emailVerifiedAt   DateTime?
+  failedAttempts    Int           @default(0)
+  lockedUntil       DateTime?
+  nombre            String?
+  apellido          String?
+  fechaDeNacimiento DateTime?
+  apodo             String?
+  afeccionesDeSalud String?
+  fotoPath          String?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  sessions              Session[]
+  passwordResetRequests PasswordResetRequest[]
+  healthAuditLogsAsSkater  SkaterHealthAuditLog[] @relation("SkaterHealthAuditLogSkater")
+  healthAuditLogsAsEditor  SkaterHealthAuditLog[] @relation("SkaterHealthAuditLogEditor")
+  instructorInvitationsCreated InstructorInvitation[] @relation("InstructorInvitationCreatedBy")
+  instructorInvitationsResolved InstructorInvitation[] @relation("InstructorInvitationResolvedAccount")
+  roleAssignmentsAsAdmin RoleAssignmentAuditLog[] @relation("RoleAssignmentAuditLogAdmin")
+  roleAssignmentsAsTarget RoleAssignmentAuditLog[] @relation("RoleAssignmentAuditLogTarget")
+
+  @@map("accounts")
+}
+
+model SkaterHealthAuditLog {
+  id                String   @id @default(uuid())
+  skaterAccountId   String
+  skaterAccount     Account  @relation("SkaterHealthAuditLogSkater", fields: [skaterAccountId], references: [id])
+  editedByAccountId String
+  editedByAccount   Account  @relation("SkaterHealthAuditLogEditor", fields: [editedByAccountId], references: [id])
+  editedAt          DateTime @default(now())
+
+  @@index([skaterAccountId])
+  @@map("skater_health_audit_log")
+}
+
+enum PasswordResetStatus {
+  pending
+  used
+  expired
+}
+
+model PasswordResetRequest {
+  id        String               @id @default(uuid())
+  accountId String
+  account   Account              @relation(fields: [accountId], references: [id])
+  token     String               @unique
+  expiresAt DateTime
+  status    PasswordResetStatus  @default(pending)
+  createdAt DateTime             @default(now())
+
+  @@index([accountId])
+  @@map("password_reset_requests")
+}
+
+enum SessionAuthMethod {
+  password
+  google
+}
+
+model Session {
+  id         String            @id @default(uuid())
+  accountId  String
+  account    Account           @relation(fields: [accountId], references: [id])
+  authMethod SessionAuthMethod
+  createdAt  DateTime          @default(now())
+  expiresAt  DateTime
+  revokedAt  DateTime?
+
+  @@index([accountId])
+  @@map("sessions")
+}
+
+enum InstructorInvitationStatus {
+  pending
+  cancelled
+  resolved
+}
+
+model InstructorInvitation {
+  id                String                      @id @default(uuid())
+  email             String
+  createdByAdminId  String
+  createdByAdmin    Account                     @relation("InstructorInvitationCreatedBy", fields: [createdByAdminId], references: [id])
+  status            InstructorInvitationStatus  @default(pending)
+  createdAt         DateTime                    @default(now())
+  resolvedAccountId String?
+  resolvedAccount   Account?                    @relation("InstructorInvitationResolvedAccount", fields: [resolvedAccountId], references: [id])
+  resolvedAt        DateTime?
+  cancelledAt       DateTime?
+
+  @@index([email])
+  @@map("instructor_invitations")
+}
+
+enum RoleAssignmentMethod {
+  existing_user
+  email_invite
+}
+
+model RoleAssignmentAuditLog {
+  id              String                @id @default(uuid())
+  adminAccountId  String
+  adminAccount    Account               @relation("RoleAssignmentAuditLogAdmin", fields: [adminAccountId], references: [id])
+  targetAccountId String?
+  targetAccount   Account?              @relation("RoleAssignmentAuditLogTarget", fields: [targetAccountId], references: [id])
+  targetEmail     String
+  method          RoleAssignmentMethod
+  createdAt       DateTime              @default(now())
+
+  @@index([targetAccountId])
+  @@map("role_assignment_audit_log")
+}
