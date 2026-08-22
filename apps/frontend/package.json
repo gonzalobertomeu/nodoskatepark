@@ -1,0 +1,28 @@
+{
+  "name": "@nodoskatepark/frontend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "@astrojs/react": "3.6.2",
+    "astro": "4.16.18",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "zod": "3.25.76",
+    "@nodoskatepark/contracts": "workspace:*"
+  },
+  "devDependencies": {
+    "@happy-dom/global-registrator": "15.11.7",
+    "@testing-library/react": "16.1.0",
+    "@types/react": "18.3.18",
+    "@types/react-dom": "18.3.5",
+    "happy-dom": "15.11.7",
+    "typescript": "5.7.3"
+  }
+}

@@ -1,0 +1,11 @@
+---
+import { VerifyEmailStatus } from '../components/VerifyEmailStatus';
+import AuthLayout from '../layouts/AuthLayout.astro';
+---
+
+<AuthLayout title="Verificar email">
+  <div class="nb-card">
+    <h1 class="nb-title">Verificar email</h1>
+    <VerifyEmailStatus client:load />
+  </div>
+</AuthLayout>

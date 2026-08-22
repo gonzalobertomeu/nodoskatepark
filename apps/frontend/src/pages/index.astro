@@ -1,0 +1,11 @@
+---
+import { MainAppPlaceholder } from '../components/MainAppPlaceholder';
+import AuthLayout from '../layouts/AuthLayout.astro';
+---
+
+<AuthLayout title="Inicio">
+  <div class="nb-card">
+    <h1 class="nb-title">NodoSkatepark</h1>
+    <MainAppPlaceholder client:load />
+  </div>
+</AuthLayout>

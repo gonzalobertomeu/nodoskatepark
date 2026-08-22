@@ -1,0 +1,14 @@
+---
+import { RegisterForm } from '../components/RegisterForm';
+import AuthLayout from '../layouts/AuthLayout.astro';
+---
+
+<AuthLayout title="Crear cuenta">
+  <div class="nb-card">
+    <h1 class="nb-title">Crear cuenta</h1>
+    <RegisterForm client:load />
+    <div class="nb-links">
+      <a href="/login">Ya tengo cuenta — ingresar</a>
+    </div>
+  </div>
+</AuthLayout>

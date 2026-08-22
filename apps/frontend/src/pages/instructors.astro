@@ -1,0 +1,14 @@
+---
+import { InstructorAssignmentView } from '../components/InstructorAssignmentView';
+import AuthLayout from '../layouts/AuthLayout.astro';
+---
+
+<AuthLayout title="Asignar instructor">
+  <div class="nb-card">
+    <h1 class="nb-title">Asignar instructor</h1>
+    <InstructorAssignmentView client:load />
+    <div class="nb-links">
+      <a href="/">Volver</a>
+    </div>
+  </div>
+</AuthLayout>

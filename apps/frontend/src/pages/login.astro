@@ -1,0 +1,22 @@
+---
+import { GoogleOutcomeBanner } from '../components/GoogleOutcomeBanner';
+import { GoogleSignInButton } from '../components/GoogleSignInButton';
+import { LoginForm } from '../components/LoginForm';
+import { SessionRedirectGuard } from '../components/SessionRedirectGuard';
+import AuthLayout from '../layouts/AuthLayout.astro';
+---
+
+<AuthLayout title="Ingresar">
+  <div class="nb-card">
+    <h1 class="nb-title">Ingresar</h1>
+    <SessionRedirectGuard client:load />
+    <GoogleOutcomeBanner client:load />
+    <LoginForm client:load />
+    <div class="nb-divider">o</div>
+    <GoogleSignInButton client:load />
+    <div class="nb-links">
+      <a href="/forgot-password">Olvidé mi contraseña</a>
+      <a href="/register">Crear cuenta</a>
+    </div>
+  </div>
+</AuthLayout>

@@ -1,0 +1,14 @@
+---
+import { SkaterBasicInfoForm } from '../components/SkaterBasicInfoForm';
+import AuthLayout from '../layouts/AuthLayout.astro';
+---
+
+<AuthLayout title="Completar perfil">
+  <div class="nb-card">
+    <h1 class="nb-title">Completá tu perfil</h1>
+    <p class="nb-field">
+      Antes de continuar, necesitamos tu nombre, apellido y fecha de nacimiento.
+    </p>
+    <SkaterBasicInfoForm mode="create" client:load />
+  </div>
+</AuthLayout>

@@ -1,0 +1,26 @@
+/*
+ * Brand palette — pinned to nodoskatepark.com's production landing page.
+ * Constitution Principle VI: no colors outside this set without amending the constitution.
+ */
+:root {
+  --color-black: #000000;
+  --color-white: #ffffff;
+
+  --color-gray-dark: #292828;
+  --color-gray-dark-alt: #343333;
+  --color-gray-light: #f5f3ef;
+  --color-gray-light-alt: #fefefe;
+
+  --color-accent: #ece315;
+  --color-accent-alt: #ebe212;
+
+  /* Neobrutalist primitives: solid fills, thick borders, hard offset shadows — no blur, no gradients. */
+  --border-width: 3px;
+  --border-color: var(--color-black);
+  --shadow-offset: 4px;
+  --shadow-hard: var(--shadow-offset) var(--shadow-offset) 0 0 var(--color-black);
+
+  --radius: 0px;
+
+  --font-family-base: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}

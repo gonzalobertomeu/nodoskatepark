@@ -1,0 +1,20 @@
+services:
+  frontend:
+    build:
+      context: ../..
+      dockerfile: apps/frontend/Dockerfile.dev
+    # Source is bind-mounted for Astro/Vite's dev server hot-reload; node_modules at every level
+    # is shadowed by a named volume so host and container dependency trees never collide. Not
+    # shared with the backend service — see the note in apps/backend/compose.yaml for why.
+    volumes:
+      - ../..:/repo
+      - frontend_node_modules_root:/repo/node_modules
+      - frontend_node_modules:/repo/apps/frontend/node_modules
+      - frontend_contracts_node_modules:/repo/packages/contracts/node_modules
+    ports:
+      - "4321:4321"
+
+volumes:
+  frontend_node_modules_root:
+  frontend_node_modules:
+  frontend_contracts_node_modules:
