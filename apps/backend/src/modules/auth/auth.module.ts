@@ -6,6 +6,7 @@ import { AccountRoleWriter } from '../instructor-assignment/domain/ports/account
 import { CurrentSessionResolver as InstructorAssignmentCurrentSessionResolver } from '../instructor-assignment/domain/ports/current-session-resolver';
 import { CurrentSessionResolver as SkaterDirectoryCurrentSessionResolver } from '../skater-directory/domain/ports/current-session-resolver';
 import { CurrentSessionResolver } from '../skater-profile/domain/ports/current-session-resolver';
+import { CurrentSessionResolver as StaffDirectoryCurrentSessionResolver } from '../staff-directory/domain/ports/current-session-resolver';
 import { ConfirmPasswordResetUseCase } from './application/use-cases/confirm-password-reset.use-case';
 import { LoginWithCredentialsUseCase } from './application/use-cases/login-with-credentials.use-case';
 import { LoginWithGoogleUseCase } from './application/use-cases/login-with-google.use-case';
@@ -33,6 +34,7 @@ import { PrismaPasswordResetRepository } from './infrastructure/persistence/pass
 import { PrismaSessionRepository } from './infrastructure/persistence/session.repository';
 import { AuthSkaterDirectorySessionResolverAdapter } from './infrastructure/skater-directory-bridge/current-session-resolver.adapter';
 import { AuthSessionResolverAdapter } from './infrastructure/skater-profile-bridge/current-session-resolver.adapter';
+import { AuthStaffDirectorySessionResolverAdapter } from './infrastructure/staff-directory-bridge/current-session-resolver.adapter';
 
 @Module({
   imports: [AppConfigModule, EmailModule, PassportModule, PersistenceModule],
@@ -52,6 +54,10 @@ import { AuthSessionResolverAdapter } from './infrastructure/skater-profile-brid
       useClass: AuthInstructorAssignmentSessionResolverAdapter,
     },
     { provide: AccountRoleWriter, useClass: AuthAccountRoleWriterAdapter },
+    {
+      provide: StaffDirectoryCurrentSessionResolver,
+      useClass: AuthStaffDirectorySessionResolverAdapter,
+    },
     EmailVerificationToken,
     GoogleStrategy,
     GoogleCallbackGuard,
@@ -71,6 +77,7 @@ import { AuthSessionResolverAdapter } from './infrastructure/skater-profile-brid
     SkaterDirectoryCurrentSessionResolver,
     InstructorAssignmentCurrentSessionResolver,
     AccountRoleWriter,
+    StaffDirectoryCurrentSessionResolver,
   ],
 })
 export class AuthModule {}

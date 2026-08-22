@@ -4,6 +4,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { InstructorAssignmentModule } from './modules/instructor-assignment/instructor-assignment.module';
 import { SkaterDirectoryModule } from './modules/skater-directory/skater-directory.module';
 import { SkaterProfileModule } from './modules/skater-profile/skater-profile.module';
+import { StaffDirectoryModule } from './modules/staff-directory/staff-directory.module';
 import { AppConfigModule } from './shared/config/app-config.module';
 
 @Module({
@@ -14,6 +15,7 @@ import { AppConfigModule } from './shared/config/app-config.module';
     SkaterProfileModule,
     SkaterDirectoryModule,
     InstructorAssignmentModule,
+    StaffDirectoryModule,
   ],
 })
 export class AppModule {}
