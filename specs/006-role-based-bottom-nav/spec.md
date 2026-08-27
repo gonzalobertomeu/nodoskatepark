@@ -24,6 +24,59 @@
   → A: En un elemento persistente (avatar) en el encabezado de cada sección, no en la barra
   inferior. La barra de staff conserva únicamente los destinos de gestión; la cuenta propia es una
   acción secundaria, no un destino de primer nivel.
+- Q: ¿A qué destino llega un skater al iniciar sesión, si "Reservar clases" —el primero de su
+  barra— todavía no está construido? → A: Al primer destino de su rol tal cual, aunque se
+  presente en su estado de sección en preparación. El orden de la barra no se reordena para
+  evitarlo y "Reservar clases" no se construye en esta funcionalidad; el aterrizaje refleja la
+  arquitectura de información definitiva desde el primer día.
+- Q: ¿Cada destino de la barra y cada superficie anidada tiene su propia dirección compartible y
+  recargable? → A: Sí, ambas. Abrir o recargar esa dirección lleva directo a la sección, con la
+  barra puesta y el control de acceso aplicado. Una recarga completa del navegador sí descarta
+  el desplazamiento y los filtros: FR-019 gobierna el cambio de destino dentro de la navegación,
+  no la recarga.
+- Q: ¿Qué hace el botón o gesto "atrás" del dispositivo dentro de la aplicación autenticada?
+  → A: Significa "subir un nivel". Solo las superficies anidadas apilan historial; cambiar de
+  destino lo reemplaza. Atrás desde una superficie anidada vuelve a la raíz de su destino, igual
+  que la flecha en pantalla de FR-022; atrás desde la raíz de un destino sale del entorno
+  autenticado. Nunca hace saltar entre destinos.
+- Q: Si a alguien le cambian el rol con la sesión activa, ¿cuándo lo refleja la barra y qué pasa
+  si está viendo una sección que su nuevo rol ya no puede usar? → A: En la próxima interacción
+  con el servidor. El rol se revalida en cada petición; en el siguiente cambio de destino,
+  recarga o refresco de datos la barra se recompone con los destinos del nuevo rol, y si la
+  sección actual dejó de estar permitida el sistema la reemplaza por el primer destino del nuevo
+  rol y lo explica. Sin sondeo continuo ni notificación push.
+- Q: Más allá del área táctil de 44×44 px, ¿qué garantiza esta funcionalidad en accesibilidad
+  desde la primera versión? → A: Una base verificable acotada a la navegación: la barra expuesta
+  como navegación con su destino activo anunciable por lector de pantalla; todos los destinos
+  alcanzables y activables por teclado con foco visible; y el foco movido al encabezado de la
+  sección nueva al cambiar de destino o subir un nivel. No se asume una auditoría WCAG de las
+  superficies ya construidas que esta funcionalidad adopta sin modificar.
+- Q: Al tocar un destino de la barra, ¿cuánto puede tardar como máximo en aparecer su
+  contenido? → A: Un destino ya visitado en la misma sesión de navegación muestra su contenido en
+  100 ms o menos, apoyado en el estado que FR-019 conserva. Un destino que se abre por primera
+  vez responde visiblemente —encabezado y esqueleto de su contenido— en 100 ms o menos y presenta
+  sus datos reales en 1 s o menos. No se montan todos los destinos por adelantado al iniciar
+  sesión.
+- Q: El skater tiene dos destinos que muestran datos suyos, "Mi perfil" y "Configuración".
+  ¿Qué contiene cada uno para que no se pisen? → A: "Mi perfil" muestra y permite editar lo que
+  identifica al skater dentro del skatepark —los datos de 004-skater-onboarding—; "Configuración"
+  contiene los datos de la cuenta (email, contraseña) y el cierre de sesión. Ningún dato aparece
+  en los dos destinos.
+- Q: ¿De dónde sale el conjunto de destinos que la barra dibuja: lo entrega el servidor o lo
+  deriva la aplicación a partir del rol de la sesión? → A: Lo deriva la aplicación. El servidor
+  sigue entregando únicamente el rol de la sesión, tal como 001-user-login-sso ya lo provee; esta
+  funcionalidad no le pide ningún dato nuevo. El control de acceso del servidor (FR-012)
+  permanece intacto: qué destinos se dibujan es presentación, nunca seguridad.
+- Q: Si al abrir un destino fallan sus datos (red caída o error del servidor), ¿qué muestra la
+  aplicación? → A: El error se presenta dentro del destino, con la posibilidad de reintentar, y la
+  barra permanece visible y funcional para irse a otro destino con un solo toque. Nunca una
+  pantalla de error que reemplace la aplicación entera, y nunca confundido con el estado de
+  sección en preparación.
+- Q: Los escenarios de aceptación citan nombres exactos de destino pero los supuestos decían que
+  los nombres definitivos se resolvían en diseño. ¿Qué vale para las pruebas? → A: Los nombres
+  quedan fijados por esta especificación y las pruebas pueden afirmarlos literalmente: "Reservar
+  clases", "Mi perfil" y "Configuración" para skater; "Skaters", "Staff" y "Horarios de clases"
+  para staff. La fase de diseño resuelve únicamente los iconos.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -54,6 +107,10 @@ correcta, y que el destino activo se distingue visualmente de los demás.
 3. **Given** un skater en cualquier sección, **When** observa la pantalla, **Then** los tres
    destinos permanecen accesibles con un solo toque, sin necesidad de abrir un menú, desplegar
    una gaveta lateral ni retroceder a una pantalla previa.
+4. **Given** un skater autenticado, **When** recorre "Mi perfil" y "Configuración", **Then**
+   encuentra en el primero los datos que lo identifican en el skatepark, con posibilidad de
+   editarlos, y en el segundo los datos de su cuenta y el cierre de sesión, sin que ningún dato
+   se repita entre ambos destinos.
 
 ---
 
@@ -88,14 +145,19 @@ y que cada destino abre la sección correcta.
    muestra el listado de staff y marca ese destino como activo.
 4. **Given** un administrador en el listado de staff, **When** quiere asignar el rol de instructor
    a alguien, **Then** puede llegar a esa acción desde ese mismo destino sin exceder tres toques
-   contados desde la raíz del destino.
+   contados desde la raíz del destino, y tanto la flecha en pantalla como el botón "atrás" del
+   dispositivo lo devuelven al listado de staff.
 5. **Given** una cuenta de staff en cualquier sección, **When** quiere cerrar sesión o consultar
    los datos de su propia cuenta, **Then** puede hacerlo desde el elemento de cuenta persistente
    del encabezado, sin que eso ocupe un destino de la barra inferior.
-6. **Given** un instructor autenticado, **When** intenta abrir directamente el listado de staff,
+6. **Given** un administrador viendo el listado de staff, **When** su rol pasa a instructor y
+   realiza cualquier interacción con el servidor, **Then** el sistema recompone la barra con los
+   destinos de instructor, lo lleva al primer destino de ese rol y le explica por qué dejó de ver
+   el listado de staff.
+7. **Given** un instructor autenticado, **When** intenta abrir directamente el listado de staff,
    **Then** el sistema rechaza el acceso, independientemente de que la barra nunca se lo haya
    ofrecido.
-7. **Given** una cuenta con rol skater, **When** intenta abrir directamente una sección exclusiva
+8. **Given** una cuenta con rol skater, **When** intenta abrir directamente una sección exclusiva
    de staff, **Then** el sistema rechaza el acceso, independientemente de que la barra nunca se
    la haya ofrecido.
 
@@ -125,6 +187,10 @@ momento hubo una pantalla en blanco intermedia.
    y vuelve, **Then** el texto de búsqueda y los resultados filtrados siguen ahí.
 3. **Given** una persona cambiando entre destinos, **When** ocurre la transición, **Then** no se
    observa una recarga completa de la pantalla ni un intervalo en blanco antes del nuevo contenido.
+4. **Given** cualquier destino o superficie anidada, **When** alguien abre su dirección
+   directamente o la recarga, **Then** el sistema muestra esa misma sección con la barra puesta y
+   el destino marcado como activo; la posición de desplazamiento y los filtros pueden no
+   conservarse, porque eso solo se garantiza al cambiar de destino sin recargar.
 
 ---
 
@@ -147,9 +213,10 @@ atrapada.
 
 **Acceptance Scenarios**:
 
-1. **Given** un skater autenticado, **When** toca "Reservar clases" antes de que esa funcionalidad
-   exista, **Then** el sistema muestra un estado explícito de sección en preparación, la barra
-   sigue visible y funcional, y la persona puede irse a otro destino con un solo toque.
+1. **Given** un skater autenticado, **When** llega a "Reservar clases" —sea por el aterrizaje
+   posterior al ingreso o tocando ese destino— antes de que esa funcionalidad exista, **Then** el
+   sistema muestra un estado explícito de sección en preparación, la barra sigue visible y
+   funcional, y la persona puede irse a otro destino con un solo toque.
 2. **Given** cualquier destino en preparación, **When** la persona lo abre, **Then** el sistema no
    muestra un mensaje de error, una pantalla en blanco ni un destino que ignore el toque.
 
@@ -181,17 +248,32 @@ el conjunto de destinos, su orden y la cantidad de toques hasta cada acción no 
 
 - ¿Qué ocurre cuando el rol de una cuenta cambia mientras su sesión está activa (por ejemplo, un
   administrador la promueve de skater a instructor)? El conjunto de destinos debe pasar a ser el
-  del nuevo rol sin requerir que la persona cierre sesión manualmente.
+  del nuevo rol sin requerir que la persona cierre sesión manualmente, en la próxima interacción
+  con el servidor.
+- ¿Qué ocurre si esa persona estaba viendo justamente una sección que su nuevo rol ya no puede
+  usar (por ejemplo, un administrador degradado a instructor mientras mira el listado de staff)?
+  El sistema la lleva al primer destino de su nuevo rol y le explica el motivo; no la deja en la
+  sección perdida ni la expulsa al ingreso.
 - ¿Qué ocurre si la sesión expira o se revoca mientras la persona está navegando? Debe salir del
   entorno navegable hacia el ingreso, sin quedar en una sección con la barra visible y sin datos.
+- ¿Qué ocurre si al abrir un destino su contenido no puede cargarse por falta de red o por un
+  error del servidor? El error se muestra dentro del destino, con opción de reintentar, y la barra
+  sigue viva para irse a otro destino; no se reemplaza la aplicación entera ni se presenta como si
+  la sección estuviera en preparación.
 - ¿Qué ocurre si un skater con onboarding incompleto intenta abrir directamente un destino? El
   paso obligatorio de onboarding sigue teniendo prioridad y la barra no se muestra hasta
   completarlo.
 - ¿Qué ocurre si alguien abre directamente la dirección de una sección que su rol no puede ver?
   El acceso se rechaza igual que si hubiera intentado llegar por cualquier otro medio.
+- ¿Dónde queda el foco del teclado después de una transición sin recarga? Pasa al encabezado de la
+  sección nueva; nunca queda apuntando a un elemento que dejó de estar en pantalla.
 - ¿Qué ocurre con los nombres de destino en las pantallas más angostas? Deben seguir siendo
   legibles y no romper la disposición de la barra ni superponerse entre sí.
 - ¿Qué ocurre al tocar el destino que ya está activo? No debe reiniciar ni vaciar la sección.
+- ¿Qué ocurre si alguien usa el botón "atrás" del dispositivo tras haber cambiado varias veces de
+  destino? No vuelve al destino anterior: sube un nivel dentro del destino actual, o sale del
+  entorno autenticado si ya está en su raíz. La barra sigue siendo el único camino entre
+  destinos.
 
 ## Requirements *(mandatory)*
 
@@ -202,6 +284,10 @@ el conjunto de destinos, su orden y la cantidad de toques hasta cada acción no 
 - **FR-001**: El sistema MUST mostrar una barra de navegación fija en el borde inferior de la
   pantalla en toda superficie de la aplicación autenticada.
 - **FR-002**: Cada destino de la barra MUST presentarse con un icono y una etiqueta de texto.
+- **FR-002a**: Las etiquetas visibles de los destinos quedan fijadas por esta especificación y
+  MUST usarse literalmente: "Reservar clases", "Mi perfil" y "Configuración" para el rol skater;
+  "Skaters", "Staff" y "Horarios de clases" para las cuentas de staff. La fase de diseño MUST
+  resolver únicamente el icono de cada destino.
 - **FR-003**: La barra MUST indicar visualmente y de forma inequívoca cuál es el destino activo.
 - **FR-004**: La barra MUST permanecer visible y en su posición mientras la persona navega dentro
   de un destino y al cambiar entre destinos.
@@ -214,6 +300,9 @@ el conjunto de destinos, su orden y la cantidad de toques hasta cada acción no 
 
 - **FR-007**: El conjunto de destinos que la barra presenta MUST derivarse del rol de la cuenta
   autenticada.
+- **FR-007a**: La aplicación MUST derivar ese conjunto a partir del rol que la sesión autenticada
+  ya expone. El único dato que esta funcionalidad MUST necesitar del servidor es ese rol: el
+  servidor MUST NOT ser la fuente de la lista de destinos, ni consultarse para obtenerla.
 - **FR-008**: Una cuenta con rol skater MUST ver exactamente tres destinos: reservar clases, su
   propio perfil y su configuración.
 - **FR-009**: Una cuenta con rol administrador MUST ver exactamente tres destinos: el listado de
@@ -227,9 +316,17 @@ el conjunto de destinos, su orden y la cantidad de toques hasta cada acción no 
   tiene permiso aunque se intente alcanzarla sin pasar por la barra; ocultar un destino es una
   decisión de presentación y nunca el único control de acceso.
 - **FR-013**: Tras un ingreso exitoso, el sistema MUST llevar a la persona al primer destino de su
-  rol, sin exigir ningún toque adicional ni intercalar una pantalla de inicio sin contenido.
+  rol, sin exigir ningún toque adicional ni intercalar ninguna pantalla intermedia. Si ese primer
+  destino todavía no fue construido, MUST presentarse en su estado de sección en preparación
+  (FR-025); el orden de la barra MUST NOT alterarse para evitar ese aterrizaje.
 - **FR-014**: Si el rol de una cuenta cambia mientras su sesión está activa, el sistema MUST
-  presentar el conjunto de destinos del nuevo rol sin requerir un cierre de sesión manual.
+  presentar el conjunto de destinos del nuevo rol sin requerir un cierre de sesión manual. El
+  cambio MUST reflejarse en la siguiente interacción con el servidor —un cambio de destino, una
+  recarga o un refresco de datos de la sección— y MUST NOT requerir sondeo continuo ni una
+  notificación empujada desde el servidor.
+- **FR-014a**: Si al reflejarse el nuevo rol la sección que la persona está viendo ya no le está
+  permitida, el sistema MUST reemplazarla por el primer destino de su nuevo rol y MUST explicar
+  por qué, en lugar de dejar la sección en pantalla, mostrar un error crudo o cerrar la sesión.
 - **FR-015**: El sistema MUST ofrecer a toda cuenta autenticada un lugar alcanzable para cerrar
   sesión y consultar los datos de su propia cuenta, disponible desde la primera versión de esta
   funcionalidad y nunca detrás de una sección en preparación.
@@ -242,6 +339,11 @@ el conjunto de destinos, su orden y la cantidad de toques hasta cada acción no 
 - **FR-018**: Para las cuentas skater, ese lugar es su destino de configuración, que por lo tanto
   MUST presentarse con contenido real desde la primera versión — al menos los datos de la cuenta y
   el cierre de sesión — y MUST NOT quedar como una sección en preparación.
+- **FR-018a**: Los dos destinos del skater que muestran datos propios MUST tener contenidos
+  disjuntos. El destino "Mi perfil" MUST presentar y permitir editar los datos que identifican al
+  skater dentro del skatepark, los que 004-skater-onboarding ya recoge. El destino "Configuración"
+  MUST presentar los datos de la cuenta —email y contraseña— y el cierre de sesión. Un mismo dato
+  MUST NOT aparecer en ambos destinos.
 
 **Comportamiento de la navegación**
 
@@ -249,15 +351,45 @@ el conjunto de destinos, su orden y la cantidad de toques hasta cada acción no 
   estado de la vista previa del destino de origen.
 - **FR-020**: La navegación entre destinos MUST NOT provocar una recarga completa de la pantalla
   ni un intervalo visible en blanco.
+- **FR-020a**: Cada destino de la barra y cada superficie anidada bajo un destino MUST tener su
+  propia dirección, compartible y marcable. Abrir esa dirección directamente MUST llevar a esa
+  sección con la barra ya presente y el destino correspondiente marcado como activo, sin pasar
+  por una pantalla intermedia y sin dejar de aplicar el control de acceso de FR-012.
+- **FR-020b**: El alcance de FR-019 es el cambio de destino dentro de la navegación en curso. Una
+  recarga completa del navegador MAY descartar la posición de desplazamiento, el texto de
+  búsqueda y los filtros; lo que MUST conservarse en ese caso es únicamente el destino o la
+  superficie que la dirección identifica.
+- **FR-020c**: El cambio de destino MUST cumplir un techo de tiempo medible. Un destino ya
+  visitado en la sesión de navegación en curso MUST mostrar su contenido en 100 ms o menos desde
+  el toque. Un destino que se abre por primera vez MUST responder visiblemente —su encabezado y
+  el esqueleto de su contenido— en 100 ms o menos, y MUST presentar sus datos reales en 1 s o
+  menos. El sistema MUST NOT montar por adelantado todos los destinos del rol al iniciar sesión
+  para alcanzar ese techo.
+
 - **FR-021**: Desde la raíz de cualquier destino, toda acción primaria del producto MUST ser
   alcanzable en un máximo de tres toques.
 - **FR-022**: Las superficies ya existentes que no son destinos de primer nivel — el perfil
   individual de un skater y la asignación del rol de instructor — MUST ser alcanzables anidadas
   bajo su destino correspondiente, con una forma explícita de volver al nivel anterior.
+- **FR-022a**: El botón o gesto "atrás" del dispositivo MUST significar "subir un nivel" y MUST
+  producir el mismo resultado que la forma explícita de volver de FR-022. Desde una superficie
+  anidada MUST llevar a la raíz de su destino; desde la raíz de un destino MUST salir del entorno
+  autenticado.
+- **FR-022b**: Cambiar de destino MUST NOT agregar un paso al historial de navegación: el botón
+  "atrás" MUST NOT hacer saltar de un destino a otro. Solo las superficies anidadas apilan
+  historial.
 - **FR-023**: Ninguna pantalla de la aplicación MUST consistir únicamente en una lista de enlaces
   a otras pantallas.
 - **FR-024**: Si la sesión expira o se revoca durante la navegación, el sistema MUST sacar a la
   persona del entorno navegable hacia el ingreso.
+- **FR-024a**: Si los datos de un destino no pueden obtenerse por un fallo de red o del servidor,
+  el sistema MUST mostrar el error dentro de ese destino, MUST ofrecer reintentar, y MUST mantener
+  la barra visible y funcional para cambiar a otro destino con un solo toque. El sistema MUST NOT
+  reemplazar la aplicación entera por una pantalla de error ni sacar a la persona del entorno
+  navegable.
+- **FR-024b**: El estado de error de FR-024a MUST distinguirse del estado de sección en
+  preparación de FR-025: un fallo recuperable MUST NOT presentarse como una sección todavía no
+  construida, ni al revés.
 
 **Destinos en preparación**
 
@@ -271,6 +403,15 @@ el conjunto de destinos, su orden y la cantidad de toques hasta cada acción no 
 
 - **FR-027**: Todo elemento interactivo de la barra MUST ofrecer un área tocable de al menos
   44 × 44 píxeles.
+- **FR-027a**: La barra MUST exponerse a las tecnologías de asistencia como la navegación
+  principal de la aplicación, y cuál de sus destinos está activo MUST ser anunciable por un lector
+  de pantalla, no señalado únicamente por color o forma.
+- **FR-027b**: Todos los destinos de la barra MUST ser alcanzables y activables mediante teclado,
+  con un indicador de foco visible, en toda presentación de la navegación —incluido el riel o
+  columna lateral que FR-030 admite en tablet y escritorio.
+- **FR-027c**: Al cambiar de destino o al subir un nivel, el foco MUST trasladarse al encabezado
+  de la sección que pasa a mostrarse. El foco MUST NOT quedar en un elemento que ya no está en
+  pantalla tras una transición sin recarga.
 - **FR-028**: La barra MUST respetar las áreas seguras del dispositivo, de modo que no quede
   tapada por los elementos del sistema operativo ni los tape.
 - **FR-029**: La aplicación MUST presentarse sin desplazamiento horizontal desde un ancho de
@@ -287,7 +428,8 @@ el conjunto de destinos, su orden y la cantidad de toques hasta cada acción no 
   (construido o en preparación).
 - **Conjunto de destinos por rol**: la lista ordenada de destinos que corresponde a cada rol del
   producto. Es la definición de la arquitectura de información de la aplicación y la única fuente
-  de qué ve cada rol en la barra.
+  de qué ve cada rol en la barra. Reside en la aplicación, que la resuelve a partir del rol de la
+  sesión; no la entrega el servidor (FR-007a).
 
 ## Success Criteria *(mandatory)*
 
@@ -295,20 +437,38 @@ el conjunto de destinos, su orden y la cantidad de toques hasta cada acción no 
 
 - **SC-001**: Desde la raíz de cualquier destino, el 100 % de las acciones primarias del producto
   se alcanza en tres toques o menos.
-- **SC-002**: Cambiar de destino y volver conserva la posición de desplazamiento y el estado
-  previo en el 100 % de los destinos que presentan listados o formularios.
-- **SC-003**: Una persona que inicia sesión llega a contenido útil de su rol sin ningún toque
-  adicional después de ingresar.
+- **SC-002**: Cambiar de destino y volver, sin recargar, conserva la posición de desplazamiento y
+  el estado previo en el 100 % de los destinos que presentan listados o formularios.
+- **SC-002a**: El 100 % de los destinos y de las superficies anidadas se alcanza abriendo su
+  dirección directamente, con la barra puesta y el destino correcto marcado como activo.
+- **SC-002b**: Volver a un destino ya visitado muestra su contenido en 100 ms o menos en el 100 %
+  de los destinos; abrir un destino por primera vez produce una respuesta visible en 100 ms o
+  menos y sus datos reales en 1 s o menos.
+- **SC-003**: Una persona que inicia sesión llega al primer destino de su rol sin ningún toque
+  adicional y sin pasar por ninguna pantalla intermedia. Para los destinos ya construidos eso
+  significa contenido real en la primera pintura; para un destino todavía en preparación, su
+  estado explícito de sección en preparación, nunca un error ni una pantalla vacía sin explicar.
 - **SC-004**: Una persona que abre la aplicación por primera vez identifica y visita los tres
   destinos de su rol en menos de 30 segundos, sin instrucciones previas.
 - **SC-005**: En el 100 % de las combinaciones de rol y destino, ninguna cuenta ve en la barra una
   sección que su rol no puede usar.
 - **SC-006**: La aplicación se recorre completa sin desplazamiento horizontal en todo ancho desde
   320 píxeles en adelante.
+- **SC-006a**: El 100 % de los destinos de la barra se alcanza y se activa solo con teclado, con
+  foco visible, y el destino activo se anuncia por lector de pantalla en todas las
+  presentaciones de la navegación.
 - **SC-007**: El conjunto de destinos, su orden y la profundidad de cada camino son idénticos entre
   el ancho de teléfono y el de escritorio, sin excepciones.
 - **SC-008**: Ningún destino ofrecido por la barra produce un error al abrirlo, incluidos los que
   todavía están en preparación.
+- **SC-009**: Los destinos "Mi perfil" y "Configuración" del skater no comparten ningún dato: cada
+  dato de la persona aparece en exactamente uno de los dos, y ambos presentan contenido real desde
+  la primera versión.
+- **SC-010**: Ante un fallo de red o del servidor en cualquier destino, el 100 % de las veces la
+  barra sigue permitiendo cambiar de destino con un solo toque y el error aparece dentro del
+  destino con opción de reintentar.
+- **SC-011**: Las etiquetas visibles de los seis destinos coinciden literalmente con las que fija
+  FR-002a, en las dos barras y en todas las presentaciones de la navegación.
 
 ## Assumptions
 
@@ -319,7 +479,12 @@ el conjunto de destinos, su orden y la cantidad de toques hasta cada acción no 
   define ni construye esas funcionalidades: cada una requiere su propia especificación. Este
   criterio replica el patrón ya usado en el producto para datos que aún no existen — el marcador
   de "perfil incompleto" de 002-staff-skater-directory y el estado de "sin ingresos registrados"
-  para el control de acceso todavía no construido.
+  para el control de acceso todavía no construido. Consecuencia asumida: como el aterrizaje
+  posterior al ingreso respeta el orden definitivo de la barra (FR-013), el primer contacto de un
+  skater con la aplicación será la sección en preparación de "Reservar clases" hasta que esa
+  funcionalidad se especifique y construya. Se acepta a cambio de no reordenar dos veces la
+  arquitectura de información, y eleva la prioridad de especificar la reserva de clases a
+  continuación de esta funcionalidad.
 - **La configuración del skater es la excepción a lo anterior**: aunque tampoco fue especificada,
   no puede quedar como sección en preparación, porque es el único lugar donde un skater cierra
   sesión (FR-018). Se construye con su contenido mínimo real —datos de la cuenta y cierre de
@@ -343,15 +508,26 @@ el conjunto de destinos, su orden y la cantidad de toques hasta cada acción no 
   tres toques.
 - **El perfil individual de un skater (002) se anida bajo el destino "Skaters"**, alcanzable desde
   el listado, por el mismo criterio.
+- **La base de accesibilidad (FR-027a a FR-027c) cubre la navegación que esta funcionalidad
+  introduce** —la barra, su riel en pantallas grandes y el traslado de foco entre secciones— y no
+  presupone una auditoría de accesibilidad de las superficies ya construidas que se adoptan sin
+  modificar (listado de skaters, listado de staff, perfil propio). Una conformidad completa del
+  producto, si se decide, sería una especificación propia.
 - Los roles son mutuamente excluyentes: toda cuenta tiene exactamente uno, según el lenguaje de
   roles del producto. Ninguna cuenta ve dos conjuntos de destinos a la vez.
+- **Esta funcionalidad no pide nada nuevo al servidor.** El rol de la sesión que
+  001-user-login-sso ya expone es todo lo que la barra necesita (FR-007a). El precio asumido es
+  que cambiar la arquitectura de información exige publicar una versión nueva de la aplicación; se
+  acepta porque el conjunto de destinos es una decisión de producto poco frecuente, no un dato
+  operativo que deba cambiarse en caliente.
 - El staff no necesita acceder a las superficies propias del skater (reservar una clase para sí
   mismo, por ejemplo); si el negocio lo requiriera, sería una ampliación explícita de alcance.
 - El paso de onboarding obligatorio del skater (004) conserva su prioridad sobre esta navegación:
   una cuenta con el perfil incompleto sigue bloqueada en ese paso y no accede a la barra.
-- La elección concreta de cada icono, y los nombres definitivos visibles de cada destino, se
-  resuelven en la fase de diseño y planificación; esta especificación fija cuántos destinos hay,
-  cuáles son y a qué rol pertenecen.
+- Esta especificación fija cuántos destinos hay, cuáles son, a qué rol pertenecen y con qué
+  etiqueta visible se presentan (FR-002a), de modo que los escenarios de aceptación puedan
+  comprobarse literalmente. La fase de diseño y planificación resuelve únicamente la elección
+  concreta de cada icono.
 - La cantidad de destinos por rol se mantiene dentro del rango de dos a cinco que fija el gobierno
   del proyecto para la navegación de primer nivel.
 

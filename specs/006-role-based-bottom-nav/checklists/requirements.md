@@ -45,4 +45,23 @@
 - Scope is bounded to the navigation shell. The two genuinely unbuilt destinations — reserva de
   clases and configuración de horarios de clases — get their place in the bar and an explicit
   in-preparation state (FR-025, FR-026); each still needs its own specification.
+- Second clarification session (2026-08-27) resolved five further decision points and encoded them
+  into the spec:
+  - **Post-login landing** → the skater lands on "Reservar clases" in its in-preparation state; the
+    bar order is not reshuffled to avoid it. FR-013 and SC-003 were rewritten accordingly, closing
+    an internal contradiction between FR-013/SC-003 ("contenido útil, sin pantalla sin contenido")
+    and FR-008/FR-025 (first skater destination is unbuilt).
+  - **Addressability** → every destination and every nested surface has its own shareable,
+    reloadable address (FR-020a). FR-019's scope was bounded to in-session destination switching:
+    a full browser reload may discard scroll and filters (FR-020b, SC-002, SC-002a).
+  - **Device back** → means "up one level" and matches the on-screen back affordance of FR-022;
+    destination switches do not push history, so back never ping-pongs between destinations
+    (FR-022a, FR-022b).
+  - **Mid-session role change** → reflected on the next server interaction, no polling or push; if
+    the current section is no longer permitted the person is moved to the first destination of the
+    new role with an explanation (FR-014, FR-014a).
+  - **Accessibility floor** → bar exposed as navigation with an announceable active destination,
+    full keyboard reachability with visible focus (including the desktop rail of FR-030), and focus
+    moved to the new section's heading after a reload-free transition (FR-027a–FR-027c, SC-006a).
+    Scoped to the navigation this feature introduces, not a retro-audit of adopted surfaces.
 - Ready for `/speckit-plan`.
