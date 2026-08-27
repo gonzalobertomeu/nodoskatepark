@@ -1,23 +1,32 @@
 <!--
 Sync Impact Report
-- Version change: 2.0.0 → 2.1.0
-- Modified principles: none
+- Version change: 2.1.0 → 2.2.0
+- Modified principles: none redefined. Principle VI (Neobrutalist Design System & Brand Palette)
+  is now explicitly complemented by Principle IX: VI continues to govern how the product looks,
+  IX governs how it navigates and behaves; a UI-bearing change must satisfy both.
 - Added principles:
-  - VIII. Resend as the Sole Email Delivery Provider — Resend (resend.com) MUST be the only
-    email delivery integration in the monorepo, used for every outbound transactional email
-    category the product sends: user notifications, account/email verification, and
-    password-reset delivery. No other email provider/SDK/raw SMTP relay may be introduced
-    without a further amendment. Integration stays confined to an `infrastructure/email/`
-    adapter behind the existing `EmailSender` port (Principle II) — `domain/`/`application/`
-    code must never reference Resend directly.
-- Added sections: none (Technology Stack gained one bullet cross-referencing the new principle)
+  - IX. UX-First, Native-Feel Navigation — the authenticated application MUST present as a native
+    iOS app rather than a website: a persistent bottom tab bar (icon + label, 2-5 destinations)
+    as the sole primary navigation, no hamburger/drawer or link-list landing pages, state-
+    preserving tab switching with no full document reloads, native-feeling modal/sheet/push
+    presentations, touch-first affordances (44x44 px minimum targets, no hover-only controls),
+    a hard ceiling of three taps from any tab root to any primary action, content-first
+    expressive layouts, and mobile-first responsiveness from 320 px upward with one identical
+    information architecture at every breakpoint. UX wins over implementation convenience when
+    the two conflict.
+- Added sections: none (Technology Stack, Development Workflow, and the Governance compliance
+  review each gained one entry cross-referencing the new principle)
 - Removed sections: none
 - Templates requiring follow-up: none — this command only updates the constitution itself.
 - Deferred placeholders: none.
-- Deferred non-governance follow-up: 001-user-login-sso's already-implemented `EmailSender`
-  adapter uses SMTP (`apps/backend/src/modules/auth/infrastructure/email/smtp-email-sender.ts`),
-  not Resend — now out of compliance with this amendment. See Next Actions in the command output
-  for the suggested follow-up.
+- Resolved from v2.1.0: the SMTP `EmailSender` adapter flagged as out of compliance with
+  Principle VIII has since been replaced by `resend-email-sender.ts`; that follow-up is closed.
+- Deferred non-governance follow-up: the existing frontend cannot satisfy Principle IX as built.
+  `apps/frontend` is a static Astro MPA (`output: 'static'`) of twelve discrete `.astro` pages
+  with a single `AuthLayout.astro`, no application shell, no navigation component, and no client
+  router or view transitions — so there is no persistent bottom tab bar, and every in-app
+  navigation is a full document reload that discards tab state. Bringing the app into compliance
+  is a frontend-shell feature in its own right. See Next Actions in the command output.
 -->
 
 # NodoSkatepark Constitution
@@ -204,6 +213,54 @@ existing `EmailSender` port means the specific provider can still be swapped or 
 without touching business logic — this principle pins *which* provider is authorized
 project-wide; Principle II already governs *how* any such adapter must be wired.
 
+### IX. UX-First, Native-Feel Navigation
+UX is a first-class constraint on every user-facing surface, not a finishing pass: where UX
+quality and implementation convenience conflict, the conflict MUST be resolved in favor of UX,
+and the added implementation cost is accepted rather than traded away.
+
+The authenticated application — both the skater MainApp and the staff administration app — MUST
+present itself as a native iOS application, not as a website:
+
+- **Bottom tab bar as the primary navigation.** Every authenticated surface MUST be reachable
+  from a persistent bottom tab bar, each destination carrying an icon plus a text label. The bar
+  MUST stay visible and fixed while navigating within a tab. A top navigation bar, a
+  hamburger/drawer menu, or a landing page that is merely a list of links MUST NOT serve as the
+  primary navigation mechanism. Top-level destinations MUST number between 2 and 5; needing a
+  sixth is a signal to restructure the information architecture, never to add an overflow menu.
+- **Navigation preserves state.** Switching to another tab and back MUST restore the previous
+  tab's scroll position and view state. In-app navigation MUST NOT cause a full document reload —
+  no white flash, no visible re-mount of the application shell between screens.
+- **Native interaction patterns.** Secondary and contextual flows MUST use native-feeling
+  presentations — modal sheets, in-place expansion, or push transitions with a back affordance —
+  rather than plain page swaps. Touch is the primary input: every interactive target MUST be at
+  least 44x44 CSS px, no affordance may be reachable only via `:hover`, and the visible
+  interactive states Principle VI requires MUST render on press/`:active`, not on hover alone.
+  Safe-area insets MUST be respected so the tab bar clears the home indicator on notched devices.
+- **Tap economy.** From any tab root, every primary action of the product MUST be reachable
+  within three taps. Screens whose only content is a list of links to other screens are
+  prohibited — every screen MUST carry real content. Any UI-bearing spec MUST state, for each
+  surface it introduces, which tab that surface lives under and the tap path that reaches it; a
+  path exceeding three taps MUST be justified in that spec or the information architecture
+  reworked until it fits.
+- **Expressive, content-first layouts.** Each screen MUST lead with the content or action the
+  user came for — real data on first paint, not an empty dashboard of cards or a chrome-heavy
+  shell wrapped around a little content. Information that fits on the current screen MUST NOT be
+  pushed behind an extra detail navigation.
+- **Responsive, with one information architecture.** Layouts MUST be designed mobile-first and
+  MUST render without horizontal scrolling from a 320 px viewport upward. At tablet and desktop
+  widths the tab bar MAY be re-presented as a side rail or column, but the destinations, their
+  order, and the depth of every path MUST remain identical across breakpoints — a desktop-only
+  navigation tree, or a surface reachable at one breakpoint and not another, is NOT permitted.
+
+Rationale: this product's users are at a skatepark, on a phone, often mid-session with one hand
+free — an interface that reads as a mobile website loses to one that reads as an app they already
+know how to operate. Pinning the bottom tab bar, the three-tap ceiling, the touch-target floor,
+and a single information architecture across breakpoints converts "good UX" from a per-feature
+aesthetic opinion into a rule a reviewer can actually check, and stops each new feature from
+quietly adding another layer of menu depth to the ones before it. This principle governs how the
+product moves and where things live; Principle VI governs how it looks — a UI-bearing change MUST
+satisfy both.
+
 ## Technology Stack
 
 - **Runtime & package manager**: Bun (see Principle I).
@@ -222,6 +279,10 @@ project-wide; Principle II already governs *how* any such adapter must be wired.
   grayscale, yellow accent) defined once as shared design tokens and consumed by the frontend.
 - **Email delivery**: Resend (resend.com) — sole provider for notifications, account/email
   verification, and password-reset email, behind the `EmailSender` port (see Principle VIII).
+- **Navigation & UX**: a native-iOS-feel application shell — persistent bottom tab bar (icon plus
+  label, 2-5 destinations) as the sole primary navigation, state-preserving tab switching with no
+  full document reloads, mobile-first responsiveness from 320 px upward, and at most three taps
+  from any tab root to any primary action (see Principle IX).
 
 ## Development Workflow
 
@@ -236,6 +297,11 @@ project-wide; Principle II already governs *how* any such adapter must be wired.
   `abstract class` (not `interface`) and injected via the class itself rather than a separate
   `Symbol()`/string token, and that the app/package boundaries from Principle IV are not
   bypassed by direct cross-app imports.
+- Any UI-bearing change MUST declare, in its spec and plan, which bottom-tab destination each new
+  surface lives under and the exact tap path that reaches it. Code review MUST verify the
+  three-tap ceiling, the 44x44 px touch-target floor, that tab switching preserves state without
+  a full document reload, and that no desktop-only navigation tree or breakpoint-exclusive
+  surface was introduced (Principle IX).
 - CI MUST run Biome and Nx-orchestrated build/test/lint tasks; a PR MUST NOT merge with
   failing Biome checks.
 - Any change MUST be verified by running the affected sub-app(s) through Docker Compose (e.g.
@@ -259,8 +325,11 @@ endpoint changes (Principle III), Compose-only orchestration and node_modules vo
 (Principle IV), the single-linter rule and Biome version floor (Principle V), the neobrutalist
 style and brand palette for any UI-bearing change (Principle VI), the skater/instructor/
 administrador/staff role terminology for any change touching roles, permissions, or account
-data (Principle VII), and that Resend remains the only email provider referenced anywhere
-outside its `EmailSender` adapter (Principle VIII). Any complexity or deviation that conflicts
+data (Principle VII), that Resend remains the only email provider referenced anywhere
+outside its `EmailSender` adapter (Principle VIII), and the UX-first navigation rules for any
+UI-bearing change — bottom tab bar as the primary navigation, the three-tap ceiling, touch-target
+minimums, state-preserving tab switching, and one identical information architecture across
+breakpoints (Principle IX). Any complexity or deviation that conflicts
 with a principle MUST be justified in the PR description or rejected.
 
-**Version**: 2.1.0 | **Ratified**: 2026-08-20 | **Last Amended**: 2026-08-21
+**Version**: 2.2.0 | **Ratified**: 2026-08-20 | **Last Amended**: 2026-08-27
