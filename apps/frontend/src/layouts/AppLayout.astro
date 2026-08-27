@@ -1,0 +1,30 @@
+---
+/**
+ * Document shell for the authenticated environment (006-role-based-bottom-nav).
+ *
+ * Distinct from AuthLayout.astro, which centres a single card for the unauthenticated surfaces.
+ * Here the page is the application: full viewport, no outer card, no page padding — the bottom
+ * navigation bar and the destination panels own the layout (Principle IX).
+ */
+import '../styles/tokens.css';
+import '../styles/neobrutalist.css';
+import '../styles/app-shell.css';
+
+interface Props {
+  title: string;
+}
+
+const { title } = Astro.props;
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>{title} — NodoSkatepark</title>
+  </head>
+  <body>
+    <slot />
+  </body>
+</html>

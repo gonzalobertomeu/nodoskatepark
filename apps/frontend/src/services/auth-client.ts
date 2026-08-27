@@ -4,9 +4,12 @@ import {
   type ConfirmPasswordResetRequest,
   GOOGLE_START_ROUTE,
   LOGIN_ROUTE,
+  LOGOUT_ROUTE,
   type LoginRequest,
   type LoginResponse,
+  type LogoutResponse,
   loginResponseSchema,
+  logoutResponseSchema,
   type OkResponse,
   okResponseSchema,
   REGISTER_ROUTE,
@@ -74,6 +77,10 @@ async function getJson<TResponse>(
 export const authClient = {
   session(): Promise<SessionResponse> {
     return getJson(SESSION_ROUTE.path, (raw) => sessionResponseSchema.parse(raw));
+  },
+
+  logout(): Promise<LogoutResponse> {
+    return postJson(LOGOUT_ROUTE.path, {}, (raw) => logoutResponseSchema.parse(raw));
   },
 
   login(input: LoginRequest): Promise<LoginResponse> {
