@@ -8,6 +8,10 @@ import { SessionRepository } from '../../domain/ports/session.repository';
 export interface ValidatedSession {
   accountId: string;
   role: Account['role'];
+  /** Carried through for GET /auth/session so the authenticated app can show the account's own
+   *  data without a second round trip (006-role-based-bottom-nav, FR-018a). The Account is
+   *  already loaded here to re-check status, so this costs no extra query. */
+  email: string;
 }
 
 /**
@@ -34,6 +38,6 @@ export class ValidateSessionUseCase {
       return null;
     }
 
-    return { accountId: account.id, role: account.role };
+    return { accountId: account.id, role: account.role, email: account.email };
   }
 }
