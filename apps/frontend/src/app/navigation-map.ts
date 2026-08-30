@@ -74,7 +74,9 @@ const SCHEDULE: Destination = {
   label: 'Horarios de clases',
   path: '/schedule',
   icon: '🗓️',
-  status: 'in-preparation',
+  // Built by 007-class-schedule-config. `renderDestination` checks this before consulting the panel
+  // map, so wiring the panel without flipping this would leave the section in preparation forever.
+  status: 'built',
 };
 
 /**

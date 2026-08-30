@@ -20,13 +20,19 @@ describe('destinos todavía no construidos (US4, FR-025, FR-026)', () => {
     restore();
   });
 
-  test('«Horarios de clases» muestra el mismo estado para instructor y administrador', async () => {
+  test('«Horarios de clases» dejó de estar en preparación: 007 lo construyó', async () => {
+    // Era un destino en preparación cuando 006 se entregó. 007-class-schedule-config lo llenó, así
+    // que ahora muestra el calendario. «Reservar clases» sigue siendo el único destino sin
+    // construir, y es el que sostiene esta historia de usuario.
     const restore = stubFetch();
     for (const role of ['instructor', 'administrador'] as const) {
       cleanup();
       locateAt('/schedule');
       render(withSession(sessionFor(role), <AppShellInner initialPath="/schedule" />));
-      await waitFor(() => expect(screen.getByText('Sección en preparación')).toBeDefined());
+      await waitFor(() =>
+        expect(screen.getByRole('navigation', { name: 'Navegación principal' })).toBeDefined(),
+      );
+      expect(screen.queryByText('Sección en preparación')).toBeNull();
     }
     restore();
   });

@@ -50,6 +50,9 @@ function defaultBody(url: string): unknown {
   if (url.includes('/staff-directory')) {
     return { items: [] };
   }
+  if (url.includes('/class-schedule')) {
+    return { classes: [], hours: [] };
+  }
   if (url.includes('/instructor-assignment')) {
     return { items: [] };
   }

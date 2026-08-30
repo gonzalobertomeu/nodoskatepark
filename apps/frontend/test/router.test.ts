@@ -11,19 +11,24 @@ describe('semántica de historial de la navegación', () => {
   });
 
   test('cambiar de destino reemplaza la entrada de historial (FR-022b)', () => {
-    const lengthBefore = window.history.length;
     goToDestination('/staff');
     expect(currentPath()).toBe('/staff');
-    expect(window.history.length).toBe(lengthBefore);
     expect(window.history.state?.kind).toBe('destination');
+    // Reemplazó en lugar de apilar: "atrás" no vuelve al destino anterior (FR-022b).
+    window.history.back();
+    expect(currentPath()).not.toBe('/skaters');
   });
 
   test('abrir una superficie anidada apila historial (FR-022a)', () => {
-    const lengthBefore = window.history.length;
     openNested('/staff/instructors');
     expect(currentPath()).toBe('/staff/instructors');
-    expect(window.history.length).toBe(lengthBefore + 1);
+    // La entrada queda marcada como anidada, que es de lo que depende `goUp` para usar el "atrás"
+    // del navegador en vez de reemplazar. No se afirma sobre `window.history.length`: es estado
+    // global compartido entre archivos de prueba, y cualquier otro que empuje o saque entradas lo
+    // vuelve inestable — mide un proxy, no el requisito.
     expect(window.history.state?.kind).toBe('nested');
+    window.history.back();
+    expect(currentPath()).toBe('/skaters');
   });
 
   test('subir un nivel devuelve a la raíz del destino (FR-022a)', () => {

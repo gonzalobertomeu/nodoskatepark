@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { SectionInPreparation } from '../components/app-shell/SectionInPreparation';
 import { StaffDestinationPanel } from '../components/app-shell/StaffDestinationPanel';
+import { ClassSchedulePanel } from '../components/class-schedule/ClassSchedulePanel';
 import { InstructorAssignmentView } from '../components/InstructorAssignmentView';
 import { SettingsView } from '../components/SettingsView';
 import { SkaterBasicInfoForm } from '../components/SkaterBasicInfoForm';
@@ -26,8 +27,9 @@ const DESTINATION_PANELS: Partial<Record<DestinationId, () => ReactNode>> = {
   // Staff
   skaters: () => <SkaterListView />,
   staff: () => <StaffDestinationPanel />,
-  // `bookings` and `schedule` are intentionally absent: their features have not been specified
-  // yet, so they render the explicit in-preparation state below (FR-025).
+  schedule: () => <ClassSchedulePanel />,
+  // `bookings` is intentionally absent: its feature has not been specified yet, so it renders the
+  // explicit in-preparation state below (FR-025).
 };
 
 const NESTED_PANELS: Record<string, () => ReactNode> = {
