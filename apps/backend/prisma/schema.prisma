@@ -138,3 +138,66 @@ model RoleAssignmentAuditLog {
   @@index([targetAccountId])
   @@map("role_assignment_audit_log")
 }
+
+/// Declaration order IS the order of the week: Postgres orders an enum by position, so
+/// `ORDER BY "dayOfWeek"` returns the grid in order with no translation table
+/// (007-class-schedule-config, data-model.md).
+enum DayOfWeek {
+  monday
+  tuesday
+  wednesday
+  thursday
+  friday
+  saturday
+  sunday
+}
+
+enum ClassAgeGroup {
+  menores
+  adultos
+}
+
+enum ClassLevel {
+  iniciantes
+  intermedios
+  avanzados
+}
+
+/// A weekly class slot. Recurs on its weekday until edited or deleted (FR-007); it carries no
+/// date, which is what makes recurrence true by construction and makes "what the grid looked like
+/// three months ago" unanswerable by design (FR-025a).
+///
+/// Hours are MINUTES SINCE MIDNIGHT, never a DateTime: local wall-clock time that no seasonal
+/// clock change can shift and that no driver can convert (FR-018a).
+///
+/// No relation to Account on purpose: a class has no assigned instructor and no attendees — that
+/// is the attendance feature's own data (FR-029).
+model ScheduledClass {
+  id             String        @id @default(uuid())
+  dayOfWeek      DayOfWeek
+  startsAtMinute Int
+  endsAtMinute   Int
+  ageGroup       ClassAgeGroup
+  level          ClassLevel
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@index([dayOfWeek, startsAtMinute])
+  @@map("scheduled_classes")
+}
+
+/// Opening hours, one row per weekday. Three states, and two of them are opposites:
+///   - no row       -> unconfigured: classes are allowed with no restriction (FR-018)
+///   - closed=true  -> closed: no class is allowed that day (FR-015a)
+///   - closed=false -> open: classes must fall inside the range (FR-014)
+/// Collapsing the first two would make a day nobody touched indistinguishable from one closed on
+/// purpose, and FR-018 could no longer be satisfied.
+model SkateparkHours {
+  dayOfWeek      DayOfWeek @id
+  closed         Boolean   @default(false)
+  opensAtMinute  Int?
+  closesAtMinute Int?
+  updatedAt      DateTime  @updatedAt
+
+  @@map("skatepark_hours")
+}

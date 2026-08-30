@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { PassportModule } from '@nestjs/passport';
 import { AppConfigModule } from '../../shared/config/app-config.module';
 import { PersistenceModule } from '../../shared/persistence/persistence.module';
+import { CurrentSessionResolver as ClassScheduleCurrentSessionResolver } from '../class-schedule/domain/ports/current-session-resolver';
 import { AccountRoleWriter } from '../instructor-assignment/domain/ports/account-role-writer';
 import { CurrentSessionResolver as InstructorAssignmentCurrentSessionResolver } from '../instructor-assignment/domain/ports/current-session-resolver';
 import { CurrentSessionResolver as SkaterDirectoryCurrentSessionResolver } from '../skater-directory/domain/ports/current-session-resolver';
@@ -23,6 +24,7 @@ import { Argon2PasswordHasher } from './infrastructure/auth/argon2-password-hash
 import { EmailVerificationToken } from './infrastructure/auth/email-verification-token';
 import { GoogleStrategy } from './infrastructure/auth/google.strategy';
 import { GoogleCallbackGuard } from './infrastructure/auth/google-callback.guard';
+import { AuthClassScheduleSessionResolverAdapter } from './infrastructure/class-schedule-bridge/auth-class-schedule-session-resolver.adapter';
 import { EmailModule } from './infrastructure/email/email.module';
 import { AuthController } from './infrastructure/http/auth.controller';
 import { SecurityLoggerService } from './infrastructure/http/security-logger.service';
@@ -58,6 +60,10 @@ import { AuthStaffDirectorySessionResolverAdapter } from './infrastructure/staff
       provide: StaffDirectoryCurrentSessionResolver,
       useClass: AuthStaffDirectorySessionResolverAdapter,
     },
+    {
+      provide: ClassScheduleCurrentSessionResolver,
+      useClass: AuthClassScheduleSessionResolverAdapter,
+    },
     EmailVerificationToken,
     GoogleStrategy,
     GoogleCallbackGuard,
@@ -78,6 +84,7 @@ import { AuthStaffDirectorySessionResolverAdapter } from './infrastructure/staff
     InstructorAssignmentCurrentSessionResolver,
     AccountRoleWriter,
     StaffDirectoryCurrentSessionResolver,
+    ClassScheduleCurrentSessionResolver,
   ],
 })
 export class AuthModule {}
