@@ -12,21 +12,23 @@
   /* A native fieldset/legend groups the day buttons — same semantics as role="group", without an
      ARIA role standing in for an element that already exists. Its default chrome is reset here. */
   border: 0;
-  margin: 0;
+  margin: 0 0 1.25rem;
   padding: 0;
   min-width: 0;
-  display: flex;
-  gap: 0.4rem;
-  overflow-x: auto;
-  padding-bottom: 0.35rem;
-  margin-bottom: 1.25rem;
+  /* Seven equal columns rather than a horizontal scroller: at 320 px each day still gets ~40 px,
+   * which fits its three-letter label. A scroller would push the current day off-screen — and the
+   * section opens on the current day (FR-001c), so on a Sunday the active day was the one you
+   * could not see. */
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.3rem;
 }
 
 .cs-day {
-  flex: 1 0 auto;
-  min-width: 44px;
+  min-width: 0;
   min-height: 44px;
-  padding: 0.5rem 0.6rem;
+  padding: 0.5rem 0.2rem;
+  text-align: center;
   border: var(--border-width) solid var(--border-color);
   background: var(--color-white);
   color: var(--color-black);
@@ -66,6 +68,13 @@
   flex-wrap: wrap;
   align-items: baseline;
   gap: 0.5rem 0.75rem;
+  /* Flex items default to min-width:auto and refuse to shrink below their content, which is how a
+   * card ends up wider than the column holding it and spills over the next day. */
+  min-width: 0;
+}
+
+.cs-class > * {
+  min-width: 0;
 }
 
 .cs-class__time {
@@ -77,6 +86,7 @@
 /* FR-004a: the category is told in words and framed by a border — never colour alone. */
 .cs-class__category {
   border: 2px solid var(--color-black);
+  overflow-wrap: anywhere;
   padding: 0.1rem 0.4rem;
   font-size: 0.78rem;
   font-weight: 700;
@@ -187,6 +197,14 @@
 }
 
 @media (min-width: 1024px) {
+  /* 006 caps a panel's content at 48 rem, which is the right reading width for text and lists and
+   * the wrong one for a seven-day calendar: it squeezed each column to ~76 px, far below what a
+   * time plus two 44 px touch targets need, and the cards spilled over the next day. The week —
+   * and only the week — gets the full panel width. */
+  .app-panel__inner:has(.cs-week) {
+    max-width: none;
+  }
+
   .cs-days,
   .cs-day-view {
     display: none;
@@ -213,10 +231,38 @@
     margin: 0 0 0.5rem;
   }
 
+  /* A seven-column week leaves each day around 130 px. A row of time + category + two 44 px
+   * buttons cannot fit in that, so inside the week the card stacks instead of laying out in a row —
+   * same content, same taps, just a shape that fits its column. */
   .cs-week .cs-class {
     box-shadow: none;
     padding: 0.5rem;
     font-size: 0.85rem;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.4rem;
+  }
+
+  .cs-week .cs-class__time {
+    font-size: 0.95rem;
+  }
+
+  /* Side by side, "Editar" and "Eliminar" need ~122 px of text — more than a day column has. They
+   * stack instead: each keeps its full 44 px touch height (FR-027) and its readable label, and the
+   * card stops being wider than the column that holds it. */
+  .cs-week .cs-class__actions {
+    margin-left: 0;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+
+  .cs-week .cs-class__action {
+    width: 100%;
+    padding: 0 0.3rem;
+  }
+
+  .cs-week .cs-class__time {
+    overflow-wrap: anywhere;
   }
 
   .cs-sheet-backdrop {

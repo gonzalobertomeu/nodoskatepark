@@ -125,8 +125,14 @@ export function AppShellInner({ initialPath }: { initialPath: string }) {
 
   // FR-027c: after a destination change or a move up one level, focus goes to the heading of the
   // section now on screen — never left on an element that is gone.
-  const surfaceKey = `${active?.id ?? ''}|${nested?.path ?? ''}`;
+  // `null` while the session is still resolving: at that point no section is on screen, so there is
+  // no surface to move focus away from. Recording it as one made the first paint look like a
+  // destination change and put the focus ring on the heading on every load.
+  const surfaceKey = active ? `${active.id}|${nested?.path ?? ''}` : null;
   useEffect(() => {
+    if (surfaceKey === null) {
+      return;
+    }
     if (previousSurface.current !== null && previousSurface.current !== surfaceKey) {
       headingRef.current?.focus();
     }
