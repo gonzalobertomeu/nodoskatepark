@@ -11,3 +11,6 @@ build
 .git
 *.log
 coverage
+.env
+.env.*
+!.env.example

@@ -1,0 +1,30 @@
+---
+import { ADDRESSABLE_PATHS } from '../app/navigation-map';
+/**
+ * Every addressable surface of the authenticated environment (006-role-based-bottom-nav).
+ *
+ * Astro's output is static, so each of these paths is prerendered as its own HTML document: an
+ * address opened or reloaded directly lands straight on that section, with the bar up and the
+ * right destination marked (FR-020a). From hydration onward the shell navigates in the client
+ * with the History API, so switching destinations never fetches a document (FR-020).
+ *
+ * Astro gives static routes priority over rest routes, and getStaticPaths only emits the paths the
+ * navigation map declares — so /login, /register, /onboarding and the rest keep their own pages
+ * and the bar never appears on them (FR-005).
+ */
+import { AppShell } from '../components/app-shell/AppShell';
+import AppLayout from '../layouts/AppLayout.astro';
+
+export function getStaticPaths() {
+  return ADDRESSABLE_PATHS.map((path) => ({
+    params: { appRoute: path.replace(/^\//, '') },
+  }));
+}
+
+const { appRoute } = Astro.params;
+const initialPath = `/${appRoute}`;
+---
+
+<AppLayout title="NodoSkatepark">
+  <AppShell initialPath={initialPath} client:load />
+</AppLayout>

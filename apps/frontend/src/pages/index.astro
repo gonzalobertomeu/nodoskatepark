@@ -1,11 +1,12 @@
 ---
-import { MainAppPlaceholder } from '../components/MainAppPlaceholder';
-import AuthLayout from '../layouts/AuthLayout.astro';
+/**
+ * Post-login landing. The shell replaces this address with the first destination of the account's
+ * role (FR-013) — no intermediate screen, no extra tap.
+ */
+import { AppShell } from '../components/app-shell/AppShell';
+import AppLayout from '../layouts/AppLayout.astro';
 ---
 
-<AuthLayout title="Inicio">
-  <div class="nb-card">
-    <h1 class="nb-title">NodoSkatepark</h1>
-    <MainAppPlaceholder client:load />
-  </div>
-</AuthLayout>
+<AppLayout title="NodoSkatepark">
+  <AppShell initialPath="/" client:load />
+</AppLayout>

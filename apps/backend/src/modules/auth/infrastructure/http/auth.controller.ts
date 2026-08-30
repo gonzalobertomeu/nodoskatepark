@@ -159,6 +159,6 @@ export class AuthController {
     if (!request.session) {
       return { authenticated: false };
     }
-    return { authenticated: true, role: request.session.role };
+    return { authenticated: true, role: request.session.role, email: request.session.email };
   }
 }

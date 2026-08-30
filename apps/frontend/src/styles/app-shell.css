@@ -1,0 +1,335 @@
+/*
+ * Application shell for the authenticated environment (006-role-based-bottom-nav).
+ * Constitution Principle VI: only tokens.css variables, solid fills, hard offset shadows.
+ * Constitution Principle IX: persistent bottom bar, 44x44 px targets, safe-area insets,
+ * one information architecture from 320 px up.
+ */
+
+body {
+  margin: 0;
+}
+
+.app-shell {
+  min-height: 100dvh;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  background: var(--color-gray-light);
+  font-family: var(--font-family-base);
+  color: var(--color-black);
+}
+
+/* --- Destination panels ---------------------------------------------------
+ * Every visited destination stays mounted; inactive ones are hidden. Each panel owns its own
+ * scroll container so scrollTop survives being hidden — that is what makes FR-019 work with no
+ * save/restore bookkeeping, and what keeps a return under the 100 ms ceiling of FR-020c.
+ */
+.app-shell__panels {
+  position: relative;
+  overflow: hidden;
+}
+
+.app-panel {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding: 1.25rem 1rem 1.5rem;
+}
+
+.app-panel[hidden] {
+  display: none;
+}
+
+.app-panel__inner {
+  max-width: 48rem;
+  margin: 0 auto;
+}
+
+/* --- Section header -------------------------------------------------------- */
+
+.app-section-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.app-section-header__title {
+  flex: 1;
+  font-size: 1.35rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  margin: 0;
+  min-width: 0;
+  overflow-wrap: break-word;
+}
+
+.app-section-header__title:focus-visible {
+  outline: 3px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.app-back {
+  flex: none;
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: var(--border-width) solid var(--border-color);
+  background: var(--color-white);
+  color: var(--color-black);
+  font-weight: 800;
+  font-size: 1.1rem;
+  cursor: pointer;
+  box-shadow: var(--shadow-hard);
+}
+
+.app-back:active {
+  box-shadow: 1px 1px 0 0 var(--color-black);
+}
+
+.app-back:focus-visible {
+  outline: 3px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* --- Account element (staff header, FR-016/FR-017) ------------------------- */
+
+.app-account {
+  position: relative;
+  flex: none;
+}
+
+.app-account__trigger {
+  width: 44px;
+  height: 44px;
+  border: var(--border-width) solid var(--border-color);
+  background: var(--color-accent);
+  color: var(--color-black);
+  font-weight: 800;
+  font-size: 0.9rem;
+  cursor: pointer;
+  box-shadow: var(--shadow-hard);
+}
+
+.app-account__trigger:active {
+  box-shadow: 1px 1px 0 0 var(--color-black);
+}
+
+.app-account__trigger:focus-visible {
+  outline: 3px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.app-account__sheet {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 0.5rem);
+  z-index: 20;
+  width: min(18rem, calc(100vw - 2rem));
+  background: var(--color-white);
+  border: var(--border-width) solid var(--border-color);
+  box-shadow: var(--shadow-hard);
+  padding: 1rem;
+  text-align: left;
+}
+
+.app-account__email {
+  font-size: 0.9rem;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+  margin: 0 0 0.75rem;
+}
+
+.app-account__role {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  color: var(--color-gray-dark);
+  margin: 0 0 1rem;
+}
+
+/* --- Bottom navigation bar / desktop rail ---------------------------------- */
+
+.app-nav {
+  background: var(--color-white);
+  border-top: var(--border-width) solid var(--border-color);
+  /* FR-028: clear the home indicator on notched devices without covering or being covered. */
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.app-nav__list {
+  display: flex;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.app-nav__item {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.app-nav__link {
+  /* FR-027: at least 44x44 px of touch target, label included. */
+  min-height: 56px;
+  min-width: 44px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.15rem;
+  padding: 0.4rem 0.25rem;
+  color: var(--color-black);
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 0.7rem;
+  text-align: center;
+  border-top: var(--border-width) solid transparent;
+}
+
+.app-nav__icon {
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.app-nav__label {
+  /* FR: labels stay legible at 320 px and never overlap. */
+  overflow-wrap: break-word;
+  hyphens: auto;
+  line-height: 1.15;
+}
+
+/* FR-027a: the active destination is marked by more than colour — a solid top bar plus a filled
+ * background — and is announced through aria-current, not through this styling alone. */
+.app-nav__link[aria-current="page"] {
+  background: var(--color-accent);
+  border-top-color: var(--color-black);
+  font-weight: 800;
+}
+
+.app-nav__link:active {
+  background: var(--color-gray-light);
+}
+
+.app-nav__link:focus-visible {
+  outline: 3px solid var(--color-black);
+  outline-offset: -3px;
+}
+
+/* --- In-preparation and error states --------------------------------------
+ * FR-024b: these two must not be mistaken for one another. In preparation is a calm, bordered
+ * note on the light surface; an error is the accent-filled block already used for errors
+ * elsewhere in the product, and carries a retry action.
+ */
+
+.app-state {
+  border: var(--border-width) solid var(--border-color);
+  padding: 1.5rem;
+  margin-top: 0.5rem;
+}
+
+.app-state--preparing {
+  background: var(--color-gray-light-alt);
+  border-style: dashed;
+}
+
+.app-state--error {
+  background: var(--color-accent);
+}
+
+.app-state__title {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.app-state__body {
+  margin: 0 0 1rem;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.app-state__body:last-child {
+  margin-bottom: 0;
+}
+
+.app-skeleton {
+  display: grid;
+  gap: 0.6rem;
+  margin-top: 0.5rem;
+}
+
+.app-skeleton__line {
+  height: 1.15rem;
+  background: var(--color-gray-light-alt);
+  border: var(--border-width) solid var(--color-gray-dark-alt);
+}
+
+.app-notice {
+  border: var(--border-width) solid var(--border-color);
+  background: var(--color-accent);
+  padding: 0.7rem 0.85rem;
+  font-weight: 700;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+}
+
+/* --- Tablet and desktop: same destinations, presented as a side rail --------
+ * FR-030/FR-031: only the layout changes. The markup, the order and the depth of every path are
+ * the ones the phone gets, because both come from the same component and the same map.
+ */
+@media (min-width: 1024px) {
+  .app-shell {
+    grid-template-rows: none;
+    grid-template-columns: 16rem 1fr;
+  }
+
+  .app-shell__panels {
+    grid-column: 2;
+    grid-row: 1;
+    height: 100dvh;
+  }
+
+  .app-nav {
+    grid-column: 1;
+    grid-row: 1;
+    border-top: none;
+    border-right: var(--border-width) solid var(--border-color);
+    padding-bottom: 0;
+    height: 100dvh;
+    overflow-y: auto;
+  }
+
+  .app-nav__list {
+    flex-direction: column;
+    padding: 1rem 0.75rem;
+    gap: 0.5rem;
+  }
+
+  .app-nav__item {
+    flex: none;
+  }
+
+  .app-nav__link {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 0.65rem;
+    font-size: 0.85rem;
+    text-align: left;
+    border: var(--border-width) solid transparent;
+    padding: 0.65rem 0.75rem;
+  }
+
+  .app-nav__link[aria-current="page"] {
+    border-color: var(--color-black);
+    box-shadow: var(--shadow-hard);
+  }
+
+  .app-panel {
+    padding: 2rem;
+  }
+}

@@ -8,6 +8,7 @@ export interface AuthenticatedRequest extends Request {
     id: string;
     accountId: string;
     role: 'skater' | 'instructor' | 'administrador';
+    email: string;
   };
 }
 
@@ -40,7 +41,12 @@ export class SessionGuard implements CanActivate {
       return;
     }
 
-    request.session = { id: cookieValue, accountId: validated.accountId, role: validated.role };
+    request.session = {
+      id: cookieValue,
+      accountId: validated.accountId,
+      role: validated.role,
+      email: validated.email,
+    };
   }
 
   issueCookie(response: Response, sessionId: string): void {
